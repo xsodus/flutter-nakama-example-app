@@ -1,4 +1,4 @@
-# flutter-nakama-example-app
+# Flutter & Nakama Example App
 
 This is the example project to demonstrate how we can write the flutter app and communicate with Nakama server.
 
@@ -18,3 +18,4 @@ Please see more detail at README.md in both `frontend` and `backend` directory.
 
 1. The flutter Nakama SDK cannot communicate with authoritative multiplayer service.
    It only create a game room and comminate with relayed multiplayer service.
+   Ref: https://github.com/obrunsmann/flutter_nakama/issues/40
