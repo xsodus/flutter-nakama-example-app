@@ -41,7 +41,6 @@ class ApplicationCubit extends Cubit<ApplicationState> {
     if (isMatched) {
       emit(ApplicationState(session: state.session, match: match));
     }
-    //'488ef496-debb-41f0-b8ef-59bf8b987686'
     return isMatched;
   }
 }

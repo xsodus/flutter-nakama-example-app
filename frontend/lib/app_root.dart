@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:frontend/page/chat_room.dart';
+import 'package:frontend/page/chat_room_page.dart';
 import 'package:frontend/page/home_page.dart';
 import 'package:frontend/page/login_page.dart';
 
@@ -24,11 +24,9 @@ class AppRoot extends StatelessWidget {
             primarySwatch: Colors.blue,
           ),
           routes: {
-            // When navigating to the "/" route, build the FirstScreen widget.
             HOME_PAGE: (context) =>
                 const HomePage(title: 'Flutter Demo Home Page'),
-            // When navigating to the "/second" route, build the SecondScreen widget.
-            LOGIN_PAGE: (context) => const LoginPage(title: 'Login'),
+            LOGIN_PAGE: (context) => const LoginPage(title: 'Login / Sign up'),
             CHAT_ROOM_PAGE: (context) => const ChatRoomPage(title: "Chat JA!")
           },
         ));

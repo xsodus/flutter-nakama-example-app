@@ -22,11 +22,11 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription<MatchData>? streamSubscription;
 
   void _goToLogin() {
-    Navigator.pushNamed(context, LOGIN_PAGE);
+    Navigator.pushReplacementNamed(context, LOGIN_PAGE);
   }
 
   void _goToChatRoom() {
-    Navigator.pushNamed(context, CHAT_ROOM_PAGE);
+    Navigator.pushReplacementNamed(context, CHAT_ROOM_PAGE);
   }
 
   void _createChatRoom(ApplicationCubit appCubit) async {
@@ -35,7 +35,6 @@ class _HomePageState extends State<HomePage> {
       await appCubit.createMatch();
       streamSubscription = NakamaWSClient.instance?.onMatchData.listen((e) {
         print("${e.presence.username} has join to this room");
-        print("opcode : ${e.opCode}");
         if (e.opCode == Int64(AppOpCode.JOIN)) {
           _goToChatRoom();
         }
@@ -56,10 +55,8 @@ class _HomePageState extends State<HomePage> {
       );
       try {
         var isMatched = await appCubit.joinMatch(matchId);
-        print('matched! ${isMatched}');
 
         if (isMatched) {
-          print('send ');
           NakamaWSClient.instance?.sendMatchData(
             matchId: matchId,
             opCode: Int64(AppOpCode.JOIN),
@@ -74,7 +71,6 @@ class _HomePageState extends State<HomePage> {
           );
         }
       } catch (e) {
-        print("error : ${e.toString()}");
         snController.close();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed for joining!')),
@@ -93,7 +89,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final appCubit = context.watch<ApplicationCubit>();
 
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _validateSession(appCubit);
       _createChatRoom(appCubit);
     });
@@ -104,21 +100,39 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Text(
-              'Hello ${appCubit.state.session?.username}!',
+            Text('Welcome ${appCubit.state.session?.username}!',
+                style: const TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 30)),
+            Container(
+              padding: const EdgeInsets.only(top: 20, bottom: 20),
+              child: const Text('Below is your game room id:',
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18)),
             ),
-            Text(
-              'Here is your chat room id:',
-            ),
-            Text(appCubit.state.match?.matchId ?? ""),
-            Text(
-              'Share this id to your friend or entering the id to join your friend room',
-            ),
-            TextField(
-              controller: _matchIdController,
-            ),
+            Container(
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.black)),
+                padding: const EdgeInsets.only(top: 20, bottom: 20),
+                child: Text(appCubit.state.match?.matchId ?? "",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 18))),
+            Container(
+                padding: const EdgeInsets.only(top: 20),
+                child: const Text(
+                  'Share this room id to your friend or enter your friend room id to join your friend room.',
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+                )),
+            Container(
+                padding: const EdgeInsets.all(20),
+                child: TextField(
+                    controller: _matchIdController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Room Id',
+                    ))),
             ElevatedButton(
                 onPressed: () {
                   _joinChatRoom(appCubit, _matchIdController.text);
@@ -132,11 +146,11 @@ class _HomePageState extends State<HomePage> {
         children: [
           FloatingActionButton(
             onPressed: _goToLogin,
-            tooltip: 'Go to next page',
-            child: const Icon(Icons.login),
+            tooltip: 'Logout',
+            child: const Icon(Icons.logout),
           ),
         ],
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }

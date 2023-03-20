@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_nakama/rtapi.dart';
+import 'package:frontend/app_root.dart';
 
 import '../cubit/application_cubit.dart';
 import '../nakama_socket_client.dart';
@@ -30,6 +31,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       if (e.opCode == Int64(AppOpCode.CHAT)) {
         print("receive from : ${e.presence.username}");
         buildMessageWidgets(e.presence.username, String.fromCharCodes(e.data));
+      } else if (e.opCode == Int64(AppOpCode.LEAVE)) {
+        print("${e.presence.username} has left");
+        buildMessageWidgets(e.presence.username, "left the room");
       }
     });
   }
@@ -66,30 +70,47 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         title: Text(widget.title),
       ),
       body: Center(
-          child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            TextField(
-                controller: _chatInputController,
-                onSubmitted: (message) {
-                  sendMessage(appCubit.state.match!.matchId, message);
-                },
-                decoration: InputDecoration(
-                  hintText: 'Type your message here',
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      sendMessage(appCubit.state.match!.matchId,
-                          _chatInputController.text);
-                    },
-                    icon: const Icon(Icons.send),
-                  ),
-                )),
-            ..._allMessageWidgets
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              TextField(
+                  controller: _chatInputController,
+                  onSubmitted: (message) {
+                    sendMessage(appCubit.state.match!.matchId, message);
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Type your message here',
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        sendMessage(appCubit.state.match!.matchId,
+                            _chatInputController.text);
+                      },
+                      icon: const Icon(Icons.send),
+                    ),
+                  )),
+              ..._allMessageWidgets
+            ],
+          ),
         ),
-      )),
+      ),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              NakamaWSClient.instance?.sendMatchData(
+                  matchId: appCubit.state.match?.matchId ?? "",
+                  opCode: Int64(AppOpCode.LEAVE),
+                  data: "".codeUnits);
+              Navigator.pushReplacementNamed(context, HOME_PAGE);
+            },
+            tooltip: 'Logout',
+            child: const Icon(Icons.logout),
+          ),
+        ],
+      ),
     );
   }
 }

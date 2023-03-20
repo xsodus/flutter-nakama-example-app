@@ -3,6 +3,7 @@ import 'package:flutter_nakama/nakama.dart';
 class AppOpCode {
   static const int JOIN = 0;
   static const int CHAT = 1;
+  static const int LEAVE = 2;
 }
 
 class NakamaWSClient {

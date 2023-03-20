@@ -4,6 +4,8 @@ import 'package:frontend/app_root.dart';
 
 import '../cubit/application_cubit.dart';
 
+const String nakamaIcon = 'assets/images/nakama-icon.png';
+
 class LoginPage extends StatefulWidget {
   final String title;
 
@@ -19,59 +21,63 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool _isProcessing = false;
 
-  String? validateTextField(String? value) {
+  String? validateUserNameField(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter some text';
+      return 'Please enter user name';
     }
     return null;
   }
 
-  void onSubmit(ApplicationCubit appCubit, bool isLoggingIn) async {
-    // Validate returns true if the form is valid, or false otherwise.
-    if (_formKey.currentState!.validate()) {
-      // If the form is valid, display a snackbar. In the real world,
-      // you'd often call a server or save the information in a database.
-      var snackBarController = ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Processing Data')),
-      );
+  String? validatePasswordField(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter password';
+    }
+    return null;
+  }
 
-      try {
-        setState(() {
-          _isProcessing = true;
-        });
-        if (isLoggingIn) {
-          await appCubit.login(
-              _userNameController.text, _passwordController.text);
-        } else {
-          await appCubit.signUp(
-              _userNameController.text, _passwordController.text);
-        }
-        snackBarController.close();
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login Success!')),
-        );
-        // ignore: use_build_context_synchronously
-        Navigator.pushNamed(context, HOME_PAGE);
-        setState(() {
-          _isProcessing = false;
-        });
-      } catch (e) {
-        snackBarController.close();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login Failed!')),
-        );
-        setState(() {
-          _isProcessing = false;
-        });
+  void onSubmit(
+      ApplicationCubit appCubit, BuildContext context, bool isLoggingIn) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    var snackBarController = ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Processing Data')),
+    );
+
+    try {
+      setState(() {
+        _isProcessing = true;
+      });
+      if (isLoggingIn) {
+        await appCubit.login(
+            _userNameController.text, _passwordController.text);
+      } else {
+        await appCubit.signUp(
+            _userNameController.text, _passwordController.text);
       }
+      snackBarController.close();
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login Success!')),
+      );
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacementNamed(context, HOME_PAGE);
+      setState(() {
+        _isProcessing = false;
+      });
+    } catch (e) {
+      snackBarController.close();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login Failed!')),
+      );
+      setState(() {
+        _isProcessing = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final appCubit = context.watch<ApplicationCubit>();
-    print("username:${appCubit.state.session?.username}");
 
     return Scaffold(
       appBar: AppBar(
@@ -81,40 +87,51 @@ class _LoginPageState extends State<LoginPage> {
           child: Form(
         key: _formKey,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            const Text(
-              'Welcome to online chat. Please login',
-            ),
-            const Text(
-              'Username:',
-            ),
-            TextFormField(
-              enabled: !_isProcessing,
-              validator: validateTextField,
-              controller: _userNameController,
-            ),
-            const Text(
-              'Password:',
-            ),
-            TextFormField(
-              enabled: !_isProcessing,
-              validator: validateTextField,
-              controller: _passwordController,
-            ),
-            Row(children: [
-              ElevatedButton(
-                onPressed: !_isProcessing
-                    ? () {
-                        onSubmit(appCubit, true);
-                      }
-                    : null,
-                child: const Text('Login'),
+            const Text('Flutter Nakama App',
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 30)),
+            const Image(image: AssetImage(nakamaIcon)),
+            Container(
+                padding: const EdgeInsets.all(10),
+                child: TextFormField(
+                    enabled: !_isProcessing,
+                    validator: validateUserNameField,
+                    controller: _userNameController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'User Name',
+                    ))),
+            Container(
+                padding: const EdgeInsets.all(10),
+                child: TextFormField(
+                    obscureText: true,
+                    enabled: !_isProcessing,
+                    validator: validatePasswordField,
+                    controller: _passwordController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Password',
+                    ))),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Container(
+                padding: const EdgeInsets.only(right: 10),
+                child: ElevatedButton(
+                  onPressed: !_isProcessing
+                      ? () {
+                          onSubmit(appCubit, context, true);
+                        }
+                      : null,
+                  child: const Text('Login'),
+                ),
               ),
               ElevatedButton(
                 onPressed: !_isProcessing
                     ? () {
-                        onSubmit(appCubit, false);
+                        onSubmit(appCubit, context, false);
                       }
                     : null,
                 child: const Text('Sign up'),
