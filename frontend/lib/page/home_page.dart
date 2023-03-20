@@ -1,12 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_nakama/rtapi.dart';
 
 import '../app_root.dart';
 import '../cubit/application_cubit.dart';
-import '../nakama_socket_client.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -19,7 +15,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _matchIdController = TextEditingController();
   bool _isOnMatched = false;
-  StreamSubscription<MatchData>? streamSubscription;
 
   void _goToLogin() {
     Navigator.pushReplacementNamed(context, LOGIN_PAGE);
@@ -33,19 +28,7 @@ class _HomePageState extends State<HomePage> {
     if (appCubit.state.session != null && appCubit.state.match == null) {
       print("Create a new chat room!");
       await appCubit.createMatch();
-      streamSubscription = NakamaWSClient.instance?.onMatchData.listen((e) {
-        print("${e.presence.username} has join to this room");
-        if (e.opCode == Int64(AppOpCode.JOIN)) {
-          _goToChatRoom();
-        }
-      });
     }
-  }
-
-  @override
-  void dispose() {
-    streamSubscription?.cancel();
-    super.dispose();
   }
 
   void _joinChatRoom(ApplicationCubit appCubit, String matchId) async {
@@ -57,15 +40,11 @@ class _HomePageState extends State<HomePage> {
         var isMatched = await appCubit.joinMatch(matchId);
 
         if (isMatched) {
-          NakamaWSClient.instance?.sendMatchData(
-            matchId: matchId,
-            opCode: Int64(AppOpCode.JOIN),
-            data: 'join'.codeUnits,
-          );
           snController.close();
           _goToChatRoom();
         } else {
           snController.close();
+          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed for joining!')),
           );

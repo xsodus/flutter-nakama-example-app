@@ -1,0 +1,5 @@
+node_modules
+.vscode
+.dart_tool
+.idea
+.DS_Store

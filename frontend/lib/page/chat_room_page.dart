@@ -21,13 +21,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final _formKey = GlobalKey<FormState>();
   final _chatInputController = TextEditingController();
   final List<Widget> _allMessageWidgets = [];
-  StreamSubscription<MatchData>? streamSubscription;
+  StreamSubscription<MatchData>? _streamMatchSubscription;
 
   @override
   void initState() {
     super.initState();
 
-    streamSubscription = NakamaWSClient.instance?.onMatchData.listen((e) {
+    _streamMatchSubscription = NakamaWSClient.instance?.onMatchData.listen((e) {
+      print("global receive from : ${e.opCode}  ${e.presence.username}");
       if (e.opCode == Int64(AppOpCode.CHAT)) {
         print("receive from : ${e.presence.username}");
         buildMessageWidgets(e.presence.username, String.fromCharCodes(e.data));
@@ -57,7 +58,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   @override
   void dispose() {
-    streamSubscription?.cancel();
+    _streamMatchSubscription?.cancel();
     super.dispose();
   }
 
@@ -100,10 +101,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         children: [
           FloatingActionButton(
             onPressed: () {
-              NakamaWSClient.instance?.sendMatchData(
-                  matchId: appCubit.state.match?.matchId ?? "",
-                  opCode: Int64(AppOpCode.LEAVE),
-                  data: "".codeUnits);
+              appCubit.leaveMatch();
               Navigator.pushReplacementNamed(context, HOME_PAGE);
             },
             tooltip: 'Logout',

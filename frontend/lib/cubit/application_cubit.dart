@@ -31,6 +31,7 @@ class ApplicationCubit extends Cubit<ApplicationState> {
 
   Future<void> createMatch() async {
     final match = await NakamaWSClient.instance?.createMatch();
+
     emit(ApplicationState(session: state.session, match: match));
   }
 
@@ -42,5 +43,10 @@ class ApplicationCubit extends Cubit<ApplicationState> {
       emit(ApplicationState(session: state.session, match: match));
     }
     return isMatched;
+  }
+
+  Future<void> leaveMatch() async {
+    await NakamaWSClient.instance?.leaveMatch(state.match?.matchId ?? "");
+    emit(ApplicationState(session: state.session, match: null));
   }
 }
